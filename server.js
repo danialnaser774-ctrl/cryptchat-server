@@ -1,6 +1,5 @@
 const WebSocket = require('ws');
 const crypto = require('crypto');
-
 const PORT = process.env.PORT || 9001;
 
 function randPin() {
@@ -12,7 +11,6 @@ const rooms   = new Map();
 const nicks   = new Map();
 
 const wss = new WebSocket.Server({ port: PORT });
-
 console.log('CryptChat Server lyssnar på port ' + PORT);
 
 wss.on('connection', (ws) => {
@@ -28,20 +26,17 @@ wss.on('connection', (ws) => {
         nicks.set(ws, msg.nickname || 'Anonym');
         ws.send(JSON.stringify({ type: 'auth_ok', pin, nickname: msg.nickname }));
       }
-
       else if (type === 'create_room') {
         const code = randPin();
         rooms.set(ws, code);
         ws.send(JSON.stringify({ type: 'room_created', room_id: code, room_name: msg.room_name, access_code: code }));
       }
-
       else if (type === 'join_room') {
         const code = msg.access_code;
         rooms.set(ws, code);
         ws.send(JSON.stringify({ type: 'room_joined', room_id: code, room_name: code, members: '2' }));
         broadcast(code, { type: 'user_joined', nickname: nicks.get(ws) || 'Anonym', pin }, ws);
       }
-
       else if (type === 'message') {
         const room = rooms.get(ws);
         if (room) {
@@ -55,7 +50,6 @@ wss.on('connection', (ws) => {
           });
         }
       }
-
       else if (type === 'file_init') {
         const room = rooms.get(ws);
         if (room) {
@@ -71,17 +65,26 @@ wss.on('connection', (ws) => {
           }, ws);
         }
       }
-
       else if (type === 'file_chunk') {
         const room = rooms.get(ws);
         if (room) broadcast(room, msg, ws);
       }
-
       else if (type === 'file_complete') {
         const room = rooms.get(ws);
         if (room) broadcast(room, msg, ws);
       }
-
+      else if (type === 'video_offer') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'video_offer', offer: msg.offer, from_pin: pin }, ws);
+      }
+      else if (type === 'video_answer') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'video_answer', answer: msg.answer, from_pin: pin }, ws);
+      }
+      else if (type === 'ice_candidate') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'ice_candidate', candidate: msg.candidate, from_pin: pin }, ws);
+      }
       else if (type === 'ping') {
         ws.send(JSON.stringify({ type: 'pong' }));
       }
