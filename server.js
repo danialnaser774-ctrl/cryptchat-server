@@ -1,5 +1,4 @@
 const WebSocket = require('ws');
-const crypto = require('crypto');
 const PORT = process.env.PORT || 9001;
 
 function randPin() {
@@ -82,11 +81,15 @@ wss.on('connection', (ws) => {
         const room = rooms.get(ws);
         if (room) broadcast(room, { type: 'video_answer', answer: msg.answer, from_pin: pin }, ws);
       }
+      else if (type === 'video_end') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'video_end', from_pin: pin }, ws);
+      }
       else if (type === 'ice_candidate') {
         const room = rooms.get(ws);
         if (room) broadcast(room, { type: 'ice_candidate', candidate: msg.candidate, from_pin: pin }, ws);
       }
-      // Fjärrstyrning
+      // Fjärrstyrning signaling
       else if (type === 'remote_request') {
         const room = rooms.get(ws);
         if (room) broadcast(room, { type: 'remote_request', code: msg.code, from_pin: pin }, ws);
@@ -110,6 +113,39 @@ wss.on('connection', (ws) => {
       else if (type === 'remote_ice') {
         const room = rooms.get(ws);
         if (room) broadcast(room, { type: 'remote_ice', candidate: msg.candidate, from_pin: pin }, ws);
+      }
+      else if (type === 'remote_end') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_end', from_pin: pin }, ws);
+      }
+      // Fjärrstyrning mus/tangentbord
+      else if (type === 'remote_mouse_move') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_mouse_move', x: msg.x, y: msg.y }, ws);
+      }
+      else if (type === 'remote_mouse_click') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_mouse_click', x: msg.x, y: msg.y, button: msg.button }, ws);
+      }
+      else if (type === 'remote_mouse_dblclick') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_mouse_dblclick', x: msg.x, y: msg.y }, ws);
+      }
+      else if (type === 'remote_mouse_scroll') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_mouse_scroll', x: msg.x, y: msg.y }, ws);
+      }
+      else if (type === 'remote_key_press') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_key_press', key: msg.key, modifier: msg.modifier }, ws);
+      }
+      else if (type === 'remote_type_text') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_type_text', text: msg.text }, ws);
+      }
+      else if (type === 'remote_screen_size') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_screen_size', width: msg.width, height: msg.height }, ws);
       }
       else if (type === 'ping') {
         ws.send(JSON.stringify({ type: 'pong' }));
