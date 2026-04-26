@@ -11,7 +11,7 @@ const rooms   = new Map();
 const nicks   = new Map();
 
 const wss = new WebSocket.Server({ port: PORT });
-console.log('CryptChat Server lyssnar på port ' + PORT);
+console.log('CAC Chatt Server lyssnar på port ' + PORT);
 
 wss.on('connection', (ws) => {
   const pin = randPin();
@@ -73,6 +73,7 @@ wss.on('connection', (ws) => {
         const room = rooms.get(ws);
         if (room) broadcast(room, msg, ws);
       }
+      // Video samtal
       else if (type === 'video_offer') {
         const room = rooms.get(ws);
         if (room) broadcast(room, { type: 'video_offer', offer: msg.offer, from_pin: pin }, ws);
@@ -84,6 +85,31 @@ wss.on('connection', (ws) => {
       else if (type === 'ice_candidate') {
         const room = rooms.get(ws);
         if (room) broadcast(room, { type: 'ice_candidate', candidate: msg.candidate, from_pin: pin }, ws);
+      }
+      // Fjärrstyrning
+      else if (type === 'remote_request') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_request', code: msg.code, from_pin: pin }, ws);
+      }
+      else if (type === 'remote_approved') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_approved', from_pin: pin }, ws);
+      }
+      else if (type === 'remote_denied') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_denied', from_pin: pin }, ws);
+      }
+      else if (type === 'remote_offer') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_offer', offer: msg.offer, from_pin: pin }, ws);
+      }
+      else if (type === 'remote_answer') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_answer', answer: msg.answer, from_pin: pin }, ws);
+      }
+      else if (type === 'remote_ice') {
+        const room = rooms.get(ws);
+        if (room) broadcast(room, { type: 'remote_ice', candidate: msg.candidate, from_pin: pin }, ws);
       }
       else if (type === 'ping') {
         ws.send(JSON.stringify({ type: 'pong' }));
