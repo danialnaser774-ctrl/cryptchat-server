@@ -87,7 +87,7 @@ wss.on('connection', (ws) => {
       }
       else if (type === 'ice_candidate') {
         const room = rooms.get(ws);
-        if (room) broadcast(room, { type: 'ice_candidate', candidate: msg.candidate, from_pin: pin }, ws);
+     if (room) broadcast(room, { type: 'remote_ice', candidate: msg.candidate, role: msg.role, from_pin: pin }, ws);
       }
       // Fjärrstyrning signaling
       else if (type === 'remote_request') {
